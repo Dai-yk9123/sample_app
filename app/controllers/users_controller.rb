@@ -17,6 +17,7 @@ class UsersController < ApplicationController
 #    @user.password = params[:user][:password]　全てまとめて↓１行でできる。
     @user = User.new(user_params)
     if @user.save #=> Validation
+      log_in @user
       # Success
       flash[:success] = "Welcome to the Sample App!"
       # redirect_to user_path(@user.id)　↓同じ挙動
