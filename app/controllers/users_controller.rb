@@ -1,4 +1,13 @@
 class UsersController < ApplicationController
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy] # => methodoを呼び出す際は、シンボルで呼び出す。
+  before_action :correct_user,   only: [:edit, :update]
+  before_action :admin_user,     only: :destroy
+  # => before_actionは順序が大切なので注意する。上から順に実行される。１行目でログインの確認、２行目で本人の確認。
+  
+  def index
+    @users = User.paginate(page: params[:page])
+  end
+  
   # GET /users/:id
   def show
     @user = User.find(params[:id])
@@ -6,10 +15,12 @@ class UsersController < ApplicationController
     # debugger
   end
   
+  # GET /users/new
   def new
     @user = User.new
   end
   
+  # POST /users
   def create
 #    @user = User.new()←カッコ内にはキー（シンボル）、バリューがある。ハッシュのハッシュである。
 #    @user.name     = params[:user][:name]
@@ -30,10 +41,67 @@ class UsersController < ApplicationController
     end
   end
   
-  def user_params
-    params.require(:user).permit(
-      :name, :email, :password, 
-      :password_confirmation)
+  # GET /users/:id/edit
+  # params[:id] => :id
+  def edit
+    @user = User.find(params[:id])
+    # => app/views/users/edit.html.erb
   end
+  
+  # PATCH /users/:id
+  def update
+    @user = User.find(params[:id])
+    if @user.update_attributes(user_params)
+      # Success
+      flash[:success] = "Profile updated"
+      redirect_to @user
+    else
+      # Failure
+      # => user.errors.full_messages()
+      render 'edit'
+    end
+  end
+  
+  # DELETE /users/:id
+  def destroy
+    User.find(params[:id]).destroy
+    flash[:success] = "User deleted"
+    redirect_to users_url
+  end
+  
+  # privateと宣言した後に実行されるメソッドは全てprivateなメソッドになる
+  private
+  
+    def user_params
+      params.require(:user).permit(
+        :name, :email, :password, 
+        :password_confirmation)
+    end
+  
+    # beforeアクション
+
+    # ログイン済みユーザーかどうか確認
+    def logged_in_user
+      unless logged_in?  # => unless == if not
+        # GET   /users/:id/edit
+        # PATCH /users/:id
+        store_location
+        flash[:danger] = "Please log in."
+        redirect_to login_url
+      end
+    end
+    
+    # 正しいユーザーかどうか確認
+    def correct_user
+      # GET   /users/:id/edit
+      # PATCH /users/:id
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless current_user?(@user) # <= @user == current_user
+    end
+    
+    # 管理者かどうか確認
+    def admin_user
+      redirect_to(root_url) unless current_user.admin?
+    end
   
 end
