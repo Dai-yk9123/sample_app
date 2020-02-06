@@ -28,13 +28,17 @@ class UsersController < ApplicationController
 #    @user.password = params[:user][:password]　全てまとめて↓１行でできる。
     @user = User.new(user_params)
     if @user.save #=> Validation
-      log_in @user
       # Success
-      flash[:success] = "Welcome to the Sample App!"
-      # redirect_to user_path(@user.id)　↓同じ挙動
-      # redirect_to user_path(@user)　↓同じ挙動
-      redirect_to @user
-      # => GET "/users/#{@user.id}" => show
+      @user.send_activation_email
+      flash[:info] = "Please check your email to activate your account."
+      redirect_to root_url
+      # ↓↓↓ メールによる本人確認を実行するため以下の挙動をコメントアウトした
+      # log_in @user
+      # flash[:success] = "Welcome to the Sample App!"
+      # # redirect_to user_path(@user.id)　↓同じ挙動
+      # # redirect_to user_path(@user)　↓同じ挙動
+      # redirect_to @user
+      # # => GET "/users/#{@user.id}" => show
     else
       # Failure
       render 'new'
