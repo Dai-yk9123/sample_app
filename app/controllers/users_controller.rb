@@ -13,6 +13,7 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     # => app/views/users/show.html.erbls
     # debugger
+    @microposts = @user.microposts.paginate(page: params[:page])
   end
   
   # GET /users/new
@@ -83,17 +84,6 @@ class UsersController < ApplicationController
     end
   
     # beforeアクション
-
-    # ログイン済みユーザーかどうか確認
-    def logged_in_user
-      unless logged_in?  # => unless == if not
-        # GET   /users/:id/edit
-        # PATCH /users/:id
-        store_location
-        flash[:danger] = "Please log in."
-        redirect_to login_url
-      end
-    end
     
     # 正しいユーザーかどうか確認
     def correct_user
