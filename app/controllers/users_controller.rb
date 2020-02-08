@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy] # => methodoを呼び出す際は、シンボルで呼び出す。
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy,
+                                        :following, :followers] # => methodoを呼び出す際は、シンボルで呼び出す。
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
   # => before_actionは順序が大切なので注意する。上から順に実行される。１行目でログインの確認、２行目で本人の確認。
@@ -72,6 +73,20 @@ class UsersController < ApplicationController
     User.find(params[:id]).destroy
     flash[:success] = "User deleted"
     redirect_to users_url
+  end
+  
+  def following
+    @title = "Following"
+    @user  = User.find(params[:id])
+    @users = @user.following.paginate(page: params[:page])
+    render 'show_follow'
+  end
+
+  def followers
+    @title = "Followers"
+    @user  = User.find(params[:id])
+    @users = @user.followers.paginate(page: params[:page])
+    render 'show_follow'
   end
   
   # privateと宣言した後に実行されるメソッドは全てprivateなメソッドになる
